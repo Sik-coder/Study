@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="문과수학">
+<meta name="theme-color" content="#2F4B9A">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%EB%AC%B8%EA%B3%BC%20%EC%88%98%ED%95%99%20%EA%B8%B0%EC%B4%88%20%EA%B0%9C%EB%85%90%22%2C%22short_name%22%3A%22%EB%AC%B8%EA%B3%BC%EC%88%98%ED%95%99%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%2523F6F7FB%22%2C%22theme_color%22%3A%22%25232F4B9A%22%7D">
+<title>문과 수학 기초 개념</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1E2330; --muted:#6B7280; --faint:#9AA1AD;
+    --paper:#FFFFFF;
+    --grid:#E4E8F2; --bg:#F6F7FB;
+    --pen:#2F4B9A; --pen-dark:#23397A; --pen-soft:#E9EDF8;
+    --green:#1C8F6B; --green-soft:#E4F4EE;
+    --amber:#C77A1E; --amber-soft:#FBF1E0;
+    --line:#E3E7EF;
+    --shadow:0 16px 36px -20px rgba(30,40,70,.4);
+    --eng:'Space Grotesk', system-ui, sans-serif;
+    --kor:'Noto Sans KR', system-ui, sans-serif;
+    --math:'Georgia','Times New Roman',serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{
+    font-family:var(--kor); color:var(--ink); line-height:1.6;
+    background-color:var(--bg);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:23px 23px;
+    min-height:100vh; min-height:100dvh; -webkit-font-smoothing:antialiased;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:600px; margin:0 auto; padding:24px 16px 60px}
+  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit}
+  button:focus-visible{outline:2px solid var(--pen); outline-offset:2px; border-radius:8px}
+  a{color:inherit}
+
+  /* header */
+  .head{display:flex; align-items:center; gap:13px; margin-bottom:20px}
+  .mark{width:46px; height:46px; flex:none; background:var(--paper); border:1px solid var(--line); border-radius:13px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow)}
+  .head h1{font-size:19px; font-weight:700; letter-spacing:-.02em}
+  .head p{font-size:12.5px; color:var(--muted); margin-top:1px}
+
+  /* segmented */
+  .seg{display:flex; background:var(--paper); border:1px solid var(--line); border-radius:13px; padding:4px; gap:4px; box-shadow:var(--shadow); margin-bottom:14px}
+  .seg button{flex:1; padding:11px; border-radius:9px; font-weight:700; font-size:14.5px; color:var(--muted); transition:.18s}
+  .seg button.active{background:var(--pen); color:#fff}
+
+  /* progress */
+  .prog{display:flex; align-items:center; gap:11px; margin:0 2px 16px; font-size:12.5px; color:var(--muted)}
+  .prog .bar{flex:1; height:7px; background:#E7EAF1; border-radius:99px; overflow:hidden}
+  .prog .bar > i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--pen),#5A78D4); border-radius:99px; transition:width .5s ease}
+  .prog b{color:var(--pen); font-weight:700; font-family:var(--eng)}
+
+  /* chips */
+  .chips{display:flex; gap:8px; overflow-x:auto; padding:2px 2px 12px; -webkit-overflow-scrolling:touch; scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none; padding:8px 14px; border-radius:99px; background:var(--paper); border:1px solid var(--line); font-size:13px; font-weight:600; color:var(--muted); white-space:nowrap; transition:.15s}
+  .chip.active{background:var(--ink); color:#fff; border-color:var(--ink)}
+
+  /* unit group */
+  .unit-h{font-family:var(--eng); font-size:12.5px; font-weight:700; letter-spacing:.1em; color:var(--pen); text-transform:uppercase; margin:22px 4px 11px; display:flex; align-items:center; gap:9px}
+  .unit-h::after{content:""; flex:1; height:1px; background:var(--line)}
+
+  /* card */
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:15px; margin-bottom:11px; overflow:hidden; box-shadow:0 10px 26px -22px rgba(30,40,70,.5); transition:border-color .2s}
+  .card.open{border-color:var(--pen-soft)}
+  .card.done{border-left:3px solid var(--green)}
+  .chead{width:100%; display:flex; align-items:center; gap:12px; padding:15px 16px; text-align:left}
+  .badge{width:27px; height:27px; flex:none; border-radius:8px; background:var(--pen-soft); color:var(--pen); font-family:var(--eng); font-weight:700; font-size:12.5px; display:flex; align-items:center; justify-content:center}
+  .card.done .badge{background:var(--green-soft); color:var(--green)}
+  .chead .t{flex:1; font-weight:700; font-size:15px; letter-spacing:-.01em}
+  .chead .chev{color:var(--faint); font-size:13px; transition:transform .25s; font-family:var(--eng)}
+  .card.open .chev{transform:rotate(90deg); color:var(--pen)}
+  .check{color:var(--green); font-size:13px; font-weight:700}
+
+  .cbody{display:grid; grid-template-rows:0fr; transition:grid-template-rows .3s ease}
+  .card.open .cbody{grid-template-rows:1fr}
+  .cbody-inner{overflow:hidden}
+  .cbody-pad{padding:2px 16px 17px}
+
+  .lbl{font-family:var(--eng); font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin:14px 0 6px}
+  .concept{font-size:14px; color:#374151; line-height:1.72}
+  .concept b{color:var(--ink)}
+
+  .formula{background:var(--pen-soft); border-radius:11px; padding:13px 15px; font-family:var(--math); font-size:16px; color:var(--pen-dark); line-height:2; margin-top:4px}
+  .formula .lbl{color:var(--pen); margin:0 0 4px}
+  .problem{background:var(--amber-soft); border-left:3px solid var(--amber); border-radius:9px; padding:12px 14px; margin-top:14px; font-size:14px}
+  .problem .lbl{color:var(--amber); margin:0 0 4px}
+
+  .reveal{margin-top:12px; padding:11px 16px; border-radius:10px; border:1px solid var(--pen-soft); background:#fff; color:var(--pen); font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:7px; transition:.15s}
+  .reveal:hover{background:var(--pen-soft)}
+  .answer{display:none; margin-top:12px; background:var(--green-soft); border-radius:11px; padding:13px 15px; font-size:14px}
+  .answer.show{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(-3px)}to{opacity:1}}
+  .answer .lbl{color:var(--green); margin:0 0 5px}
+  .answer .sol{margin-top:9px; padding-top:9px; border-top:1px dashed #BFE3D5; color:#3C5A4F; font-size:13px}
+
+  .formula .fr,.problem .fr,.answer .fr,.concept .fr{display:inline-flex; flex-direction:column; text-align:center; vertical-align:middle; margin:0 .18em; line-height:1.15}
+  .fr .nu{padding:0 .3em}
+  .fr .de{padding:1px .3em 0; border-top:1.6px solid currentColor}
+  .rd{border-top:1.6px solid currentColor; padding:0 .1em}
+  sup{font-size:.72em; vertical-align:super}
+  sub{font-size:.72em; vertical-align:sub}
+  .math{font-family:var(--math)}
+
+  .actions{display:flex; align-items:center; gap:9px; margin-top:16px; flex-wrap:wrap}
+  .vid{display:inline-flex; align-items:center; gap:7px; padding:10px 14px; border-radius:10px; background:#fff; border:1px solid var(--line); font-size:13px; font-weight:600; color:var(--ink); transition:.15s; text-decoration:none}
+  .vid:hover{border-color:var(--pen); color:var(--pen)}
+  .vid svg{width:17px; height:17px}
+  .vid .play{color:#E63A3A}
+  .understood{margin-left:auto; display:inline-flex; align-items:center; gap:6px; padding:10px 14px; border-radius:10px; font-size:13px; font-weight:700; background:#fff; border:1px solid var(--line); color:var(--muted); transition:.15s}
+  .understood:hover{border-color:var(--green); color:var(--green)}
+  .understood.on{background:var(--green); border-color:var(--green); color:#fff}
+
+  .foot{text-align:center; font-size:11.5px; color:var(--faint); margin-top:26px; line-height:1.7}
+  @media (max-width:380px){ .wrap{padding:20px 12px 50px} .understood{margin-left:0} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important; animation:none !important} }
+
+  .modal{position:fixed; inset:0; background:rgba(20,24,30,.5); display:none; align-items:flex-end; justify-content:center; z-index:60}
+  .modal.show{display:flex}
+  .sheet{position:relative; background:#FFFFFF; width:100%; max-width:560px; border-radius:22px 22px 0 0; padding:24px 20px calc(26px + env(safe-area-inset-bottom)); box-shadow:0 -12px 44px rgba(0,0,0,.25); max-height:90vh; max-height:90dvh; overflow:auto; animation:slideup .28s ease}
+  @keyframes slideup{from{transform:translateY(40px); opacity:.5}to{transform:translateY(0); opacity:1}}
+  .sheet-x{position:absolute; top:15px; right:15px; width:30px; height:30px; border-radius:50%; background:#EAEDF3; color:#6B7280; font-size:13px; font-weight:700; border:none; cursor:pointer}
+  .sheet h3{font-size:17px; font-weight:700; letter-spacing:-.01em; margin-bottom:6px; padding-right:34px; color:#1E2330}
+  .sheet .desc{font-size:12.5px; color:#6B7280; line-height:1.65; margin-bottom:18px}
+  .sheet .desc b{color:#1E2330}
+  .sheet .blk{margin-bottom:16px}
+  .sheet .blk h4{font-size:13px; font-weight:700; color:#2F4B9A; margin-bottom:8px}
+  .sheet textarea{width:100%; height:60px; border:1px solid #E3E7EF; border-radius:11px; padding:10px 11px; font-size:11.5px; font-family:var(--eng); line-height:1.4; resize:vertical; background:#FFFFFF; color:#1E2330; margin-top:9px}
+  .mrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .mbtn{display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:12px 16px; border-radius:12px; font-weight:700; font-size:13.5px; border:none; cursor:pointer; font-family:var(--kor)}
+  .mbtn.pri{background:#2F4B9A; color:#fff}
+  .mbtn.pri:active{background:#23397A}
+  .mbtn.sec{background:#E9EDF8; color:#23397A}
+  .mbtn.ghost{background:none; color:#6B7280; font-weight:600; font-size:12.5px; padding:8px; margin-top:4px}
+  .file-lbl{display:inline-flex; align-items:center; padding:12px 16px; border-radius:12px; background:#fff; border:1px solid #E3E7EF; font-size:13.5px; font-weight:600; cursor:pointer; color:#1E2330}
+  .file-lbl input{display:none}
+  .hbtns{display:flex; gap:4px}
+  .hbackup{margin-left:auto; font-family:var(--kor); font-size:12px; color:#6B7280; font-weight:600; padding:7px 11px; border:1px solid #E3E7EF; border-radius:9px; background:#fff; cursor:pointer}
+  .hbackup:active{background:#EAEDF3}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <span class="mark">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <path d="M2 22 Q13 -2 24 22" stroke="var(--pen)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <line x1="2" y1="22" x2="24" y2="22" stroke="var(--faint)" stroke-width="1.4"/>
+        <circle cx="13" cy="6.4" r="2" fill="var(--amber)"/>
+      </svg>
+    </span>
+    <div>
+      <h1>문과 수학 기초 개념</h1>
+      <p>개념 + 문제 한 세트씩 · 중학교 / 고등학교</p>
+    </div>
+    <button class="hbackup" id="backupBtn">⤓ 백업</button>
+  </div>
+
+  <div class="seg">
+    <button id="segMid" class="active">중학교</button>
+    <button id="segHigh">고등학교 (문과)</button>
+  </div>
+
+  <div class="prog">
+    <span>이해 완료</span>
+    <span class="bar"><i id="progBar"></i></span>
+    <span><b id="progNum">0</b> / <span id="progTot">0</span></span>
+  </div>
+
+  <div class="chips" id="chips"></div>
+  <div id="list"></div>
+
+  <div class="foot">개념을 누르면 펼쳐져요 · ‘이해함 ✓’ 표시와 진도는 자동 저장됩니다<br>‘영상’ 버튼은 그 개념의 유튜브 검색 결과를 새 탭에서 열어요</div>
+</div>
+
+<div class="modal" id="backupModal">
+  <div class="sheet">
+    <button class="sheet-x" id="backupClose" aria-label="닫기">✕</button>
+    <h3>진도 백업 · 다른 기기로 옮기기</h3>
+    <p class="desc">한 기기에서 <b>① 내보내기</b>로 파일(또는 코드)을 받고, 다른 기기에서 <b>② 불러오기</b> 하면 진도가 그대로 이어져요. 이메일·메신저로 파일을 보내거나 코드를 복사해 붙여넣으면 됩니다.</p>
+    <div class="blk">
+      <h4>① 내보내기</h4>
+      <button class="mbtn pri" id="exportBtn">진도 파일 내려받기 + 코드 복사</button>
+      <textarea id="backupText" readonly placeholder="여기에 코드가 만들어져요 (복사해서 옮겨도 됩니다)"></textarea>
+    </div>
+    <div class="blk">
+      <h4>② 불러오기</h4>
+      <textarea id="importText" placeholder="다른 기기에서 복사한 코드를 여기에 붙여넣으세요"></textarea>
+      <div class="mrow">
+        <button class="mbtn sec" id="importBtn">코드로 복원</button>
+        <label class="file-lbl">파일에서 불러오기<input type="file" id="importFile" accept="application/json,.json"></label>
+      </div>
+    </div>
+    <button class="mbtn ghost" id="modalReset">이 기기 기록 초기화</button>
+  </div>
+</div>
+
+<script>
+/* ================= 데이터 ================= */
+/* 각 항목: t 제목 · c 개념 · f 핵심공식 · q 문제 · a 정답 · s 풀이 · v 영상검색어 */
+const DATA = {
+  중학교: [
+    { unit:"중1", items:[
+      { t:"정수와 유리수", v:"정수와 유리수 개념 중1",
+        c:`0보다 큰 수는 <b>양수(+)</b>, 작은 수는 <b>음수(−)</b>예요. <b>정수</b>는 양의 정수·0·음의 정수를 모은 것이고, <b>유리수</b>는 분모가 0이 아닌 분수 꼴로 나타낼 수 있는 수예요.`,
+        f:`<div class="lbl">핵심</div>절댓값 |a| = 수직선에서 원점까지의 <b>거리</b> (항상 0 이상)`,
+        q:`−3과 +2 중 절댓값이 더 큰 수는?`,
+        a:`<b>−3</b>`, s:`|−3| = 3, |+2| = 2 이므로 −3의 절댓값이 더 커요.` },
+      { t:"정수·유리수의 사칙연산", v:"유리수 사칙연산 부호",
+        c:`부호가 <b>같은</b> 두 수의 곱·나눗셈은 <b>+</b>, <b>다르면 −</b>예요. 덧셈은 부호가 같으면 절댓값을 더하고 공통부호를, 다르면 절댓값을 빼고 큰 쪽 부호를 붙여요.`,
+        f:`<div class="lbl">핵심</div>(−)×(−) = + &nbsp;&nbsp; (−)×(+) = −`,
+        q:`(−2) × (−5) + (−3) 을 계산하면?`,
+        a:`<b>7</b>`, s:`(−2)×(−5) = 10, 10 + (−3) = 7` },
+      { t:"문자와 식 (일차식)", v:"일차식 동류항 계산 중1",
+        c:`문자로 수량 관계를 나타낸 식이에요. 곱셈 기호는 생략하고(3×a = 3a), <b>동류항</b>(문자와 차수가 같은 항)끼리 모아 계산해요.`,
+        f:`<div class="lbl">핵심</div>분배법칙: a(b + c) = ab + ac`,
+        q:`2(x + 3) − (x − 1) 을 간단히 하면?`,
+        a:`<b>x + 7</b>`, s:`2x + 6 − x + 1 = (2x − x) + (6 + 1) = x + 7` },
+      { t:"일차방정식", v:"일차방정식 풀이 이항",
+        c:`미지수의 차수가 1인 방정식이에요. 등식의 성질을 이용해 <b>x = □</b> 꼴로 만들어요. 항을 반대편으로 옮기면(이항) 부호가 바뀌어요.`,
+        f:`<div class="lbl">핵심</div>ax = b &nbsp;→&nbsp; x = <span class="fr"><span class="nu">b</span><span class="de">a</span></span> &nbsp;(a ≠ 0)`,
+        q:`3x − 5 = 7 을 풀면?`,
+        a:`<b>x = 4</b>`, s:`3x = 7 + 5 = 12, 양변을 3으로 나누면 x = 4` },
+      { t:"정비례와 반비례", v:"정비례 반비례 그래프 중1",
+        c:`<b>정비례</b> y = ax 는 원점을 지나는 직선이고, <b>반비례</b> y = <span class="fr"><span class="nu">a</span><span class="de">x</span></span> 는 좌표축에 가까워지는 곡선이에요.`,
+        f:`<div class="lbl">핵심</div>정비례: x가 2배 → y도 2배`,
+        q:`y가 x에 정비례하고 x = 2일 때 y = 6이면, 식은?`,
+        a:`<b>y = 3x</b>`, s:`6 = a×2 이므로 a = 3. 따라서 y = 3x` },
+    ]},
+    { unit:"중2", items:[
+      { t:"유리수와 순환소수", v:"순환소수 분수로 고치기",
+        c:`분수는 <b>유한소수</b> 또는 <b>순환소수</b>로 나타나요. 기약분수의 분모를 소인수분해해 2와 5만 있으면 유한소수가 돼요.`,
+        f:`<div class="lbl">핵심</div>0.333… = <span class="fr"><span class="nu">1</span><span class="de">3</span></span>`,
+        q:`순환소수 0.444… 를 분수로 나타내면?`,
+        a:`<b><span class="fr"><span class="nu">4</span><span class="de">9</span></span></b>`, s:`x = 0.444…, 10x = 4.444…, 빼면 9x = 4 → x = 4/9` },
+      { t:"식의 계산 (지수법칙)", v:"지수법칙 정리 중2",
+        c:`같은 밑끼리 곱하면 지수를 <b>더하고</b>, 나누면 <b>빼고</b>, 거듭제곱의 거듭제곱은 지수를 <b>곱해요</b>.`,
+        f:`<div class="lbl">핵심</div>a<sup>m</sup>×a<sup>n</sup> = a<sup>m+n</sup> &nbsp;&nbsp; (a<sup>m</sup>)<sup>n</sup> = a<sup>mn</sup>`,
+        q:`x<sup>3</sup> × x<sup>4</sup> = ?`,
+        a:`<b>x<sup>7</sup></b>`, s:`밑이 같으므로 지수를 더해요: 3 + 4 = 7` },
+      { t:"일차부등식", v:"일차부등식 풀이 부등호 방향",
+        c:`부등호로 크기 관계를 나타낸 식이에요. 가장 중요한 점은 양변에 <b>음수를 곱하거나 나누면 부등호 방향이 바뀐다</b>는 거예요.`,
+        f:`<div class="lbl">핵심</div>−2x &lt; 6 &nbsp;→&nbsp; x &gt; −3 &nbsp;(방향 반대)`,
+        q:`2x + 1 ≥ 5 를 풀면?`,
+        a:`<b>x ≥ 2</b>`, s:`2x ≥ 4, 양변을 2(양수)로 나누면 x ≥ 2` },
+      { t:"연립방정식", v:"연립방정식 가감법 대입법",
+        c:`미지수가 2개인 일차방정식 두 개를 묶은 거예요. <b>가감법</b>(더하거나 빼서 소거)이나 <b>대입법</b>으로 미지수 하나를 없애 풀어요.`,
+        f:`<div class="lbl">핵심</div>한 미지수를 <b>소거</b>하는 게 목표`,
+        q:`x + y = 5, x − y = 1 을 풀면?`,
+        a:`<b>x = 3, y = 2</b>`, s:`두 식을 더하면 2x = 6 → x = 3. 대입하면 y = 2` },
+      { t:"일차함수와 그래프", v:"일차함수 기울기 y절편",
+        c:`y = ax + b 꼴이에요. <b>a는 기울기</b>(직선의 가파른 정도), <b>b는 y절편</b>(y축과 만나는 값)이에요.`,
+        f:`<div class="lbl">핵심</div>기울기 = <span class="fr"><span class="nu">y의 증가량</span><span class="de">x의 증가량</span></span>`,
+        q:`기울기가 2, y절편이 −1인 일차함수의 식은?`,
+        a:`<b>y = 2x − 1</b>`, s:`y = ax + b 에 a = 2, b = −1 을 넣으면 돼요.` },
+    ]},
+    { unit:"중3", items:[
+      { t:"제곱근과 실수", v:"제곱근 개념 중3",
+        c:`제곱해서 a가 되는 수가 a의 <b>제곱근</b>이에요. 기호 √ 를 써요. 순환하지 않는 무한소수는 <b>무리수</b>이고, 유리수와 무리수를 합쳐 <b>실수</b>라고 해요.`,
+        f:`<div class="lbl">핵심</div>(√a)<sup>2</sup> = a (a ≥ 0), &nbsp; √(a<sup>2</sup>) = |a|`,
+        q:`√9 + √16 = ?`,
+        a:`<b>7</b>`, s:`√9 = 3, √16 = 4 이므로 3 + 4 = 7` },
+      { t:"근호를 포함한 식의 계산", v:"제곱근 계산 분모의 유리화",
+        c:`근호끼리는 √a × √b = √(ab) 로 곱하고, 분모에 근호가 있으면 <b>유리화</b>해서 분모의 근호를 없애요.`,
+        f:`<div class="lbl">핵심</div><span class="fr"><span class="nu">1</span><span class="de">√2</span></span> = <span class="fr"><span class="nu">√2</span><span class="de">2</span></span>`,
+        q:`√2 × √8 = ?`,
+        a:`<b>4</b>`, s:`√2 × √8 = √16 = 4` },
+      { t:"인수분해", v:"인수분해 공식 중3",
+        c:`다항식을 <b>곱의 꼴</b>로 바꾸는 거예요. 공통인수로 묶거나 곱셈공식을 거꾸로 이용해요.`,
+        f:`<div class="lbl">핵심</div>a<sup>2</sup> − b<sup>2</sup> = (a + b)(a − b)<br>x<sup>2</sup> + (a+b)x + ab = (x + a)(x + b)`,
+        q:`x<sup>2</sup> − 9 를 인수분해하면?`,
+        a:`<b>(x + 3)(x − 3)</b>`, s:`9 = 3<sup>2</sup> 이므로 a<sup>2</sup> − b<sup>2</sup> 꼴이에요.` },
+      { t:"이차방정식", v:"이차방정식 근의 공식 인수분해",
+        c:`차수가 2인 방정식 ax<sup>2</sup> + bx + c = 0 이에요. <b>인수분해</b>로 풀거나, 안 되면 <b>근의 공식</b>을 써요.`,
+        f:`<div class="lbl">핵심</div>x = <span class="fr"><span class="nu">−b ± √<span class="rd">b<sup>2</sup> − 4ac</span></span><span class="de">2a</span></span>`,
+        q:`x<sup>2</sup> − 5x + 6 = 0 을 풀면?`,
+        a:`<b>x = 2 또는 x = 3</b>`, s:`(x − 2)(x − 3) = 0 으로 인수분해돼요.` },
+      { t:"이차함수", v:"이차함수 꼭짓점 포물선 중3",
+        c:`y = ax<sup>2</sup> + bx + c 의 그래프는 <b>포물선</b>이에요. a &gt; 0이면 아래로 볼록, a &lt; 0이면 위로 볼록해요.`,
+        f:`<div class="lbl">핵심</div>y = a(x − p)<sup>2</sup> + q &nbsp;→&nbsp; 꼭짓점 (p, q)`,
+        q:`y = (x − 1)<sup>2</sup> + 2 의 꼭짓점은?`,
+        a:`<b>(1, 2)</b>`, s:`p = 1, q = 2 이므로 꼭짓점은 (1, 2)예요.` },
+      { t:"피타고라스 정리", v:"피타고라스 정리 직각삼각형",
+        c:`직각삼각형에서 <b>빗변의 제곱</b>은 나머지 두 변의 제곱의 합과 같아요.`,
+        f:`<div class="lbl">핵심</div>c<sup>2</sup> = a<sup>2</sup> + b<sup>2</sup> &nbsp;(c는 빗변)`,
+        q:`직각을 낀 두 변이 3, 4일 때 빗변의 길이는?`,
+        a:`<b>5</b>`, s:`c<sup>2</sup> = 3<sup>2</sup> + 4<sup>2</sup> = 25 → c = 5` },
+    ]},
+  ],
+  고등학교: [
+    { unit:"수학(상)", items:[
+      { t:"곱셈공식", v:"곱셈공식 고1 수학상",
+        c:`다항식의 곱을 빠르게 전개하는 공식이에요. 자주 쓰이니 형태를 외워두면 계산이 훨씬 빨라져요.`,
+        f:`<div class="lbl">핵심</div>(a + b)<sup>2</sup> = a<sup>2</sup> + 2ab + b<sup>2</sup><br>(a + b)(a − b) = a<sup>2</sup> − b<sup>2</sup>`,
+        q:`(x + 2)<sup>2</sup> 을 전개하면?`,
+        a:`<b>x<sup>2</sup> + 4x + 4</b>`, s:`a = x, b = 2 → x<sup>2</sup> + 2·x·2 + 2<sup>2</sup>` },
+      { t:"나머지정리·인수정리", v:"나머지정리 인수정리",
+        c:`다항식 f(x)를 (x − a)로 나눈 <b>나머지는 f(a)</b>예요. 특히 f(a) = 0이면 (x − a)는 f(x)의 <b>인수</b>예요.`,
+        f:`<div class="lbl">핵심</div>나머지 = f(a)`,
+        q:`f(x) = x<sup>2</sup> + 2x + 1 을 (x − 1)로 나눈 나머지는?`,
+        a:`<b>4</b>`, s:`f(1) = 1 + 2 + 1 = 4` },
+      { t:"복소수", v:"복소수 허수단위 i 켤레",
+        c:`제곱해서 −1이 되는 수를 <b>허수단위 i</b>라고 해요. a + bi 꼴이 복소수이고, a − bi 를 <b>켤레복소수</b>라 해요.`,
+        f:`<div class="lbl">핵심</div>i<sup>2</sup> = −1, &nbsp; (a + bi)(a − bi) = a<sup>2</sup> + b<sup>2</sup>`,
+        q:`i<sup>2</sup> + i<sup>4</sup> = ?`,
+        a:`<b>0</b>`, s:`i<sup>2</sup> = −1, i<sup>4</sup> = (i<sup>2</sup>)<sup>2</sup> = 1 → −1 + 1 = 0` },
+      { t:"판별식·근과 계수의 관계", v:"판별식 근과 계수의 관계",
+        c:`ax<sup>2</sup> + bx + c = 0 에서 D = b<sup>2</sup> − 4ac 로 근의 종류를 알 수 있어요. D&gt;0 서로 다른 두 실근, D=0 중근, D&lt;0 허근.`,
+        f:`<div class="lbl">핵심</div>두 근의 합 α+β = −<span class="fr"><span class="nu">b</span><span class="de">a</span></span>, &nbsp; 곱 αβ = <span class="fr"><span class="nu">c</span><span class="de">a</span></span>`,
+        q:`x<sup>2</sup> − 5x + 6 = 0 의 두 근의 합과 곱은?`,
+        a:`<b>합 5, 곱 6</b>`, s:`a=1, b=−5, c=6 → 합 = −(−5)/1 = 5, 곱 = 6/1 = 6` },
+      { t:"이차부등식", v:"이차부등식 풀이 고1",
+        c:`이차식을 <b>인수분해</b>한 뒤 부호를 따져요. (x − a)(x − b) &lt; 0 이면 두 근 <b>사이</b>, &gt; 0 이면 두 근 <b>바깥</b>이에요.`,
+        f:`<div class="lbl">핵심</div>(x − 2)(x − 3) &lt; 0 &nbsp;→&nbsp; 2 &lt; x &lt; 3`,
+        q:`x<sup>2</sup> − x − 6 ≤ 0 을 풀면?`,
+        a:`<b>−2 ≤ x ≤ 3</b>`, s:`(x − 3)(x + 2) ≤ 0 → 두 근 −2, 3 사이` },
+    ]},
+    { unit:"수학(하)", items:[
+      { t:"집합", v:"집합 합집합 교집합 여집합",
+        c:`대상을 모은 것이 집합이에요. 두 집합을 모두 합치면 <b>합집합 ∪</b>, 겹치는 부분은 <b>교집합 ∩</b>이에요.`,
+        f:`<div class="lbl">핵심</div>n(A ∪ B) = n(A) + n(B) − n(A ∩ B)`,
+        q:`n(A) = 5, n(B) = 4, n(A ∩ B) = 2 일 때 n(A ∪ B)는?`,
+        a:`<b>7</b>`, s:`5 + 4 − 2 = 7 (겹치는 2개를 한 번만 세요)` },
+      { t:"명제", v:"명제 역 이 대우 참거짓",
+        c:`참·거짓을 분명히 가릴 수 있는 문장이 명제예요. p → q 에 대해 역·이·<b>대우</b>가 있고, <b>명제와 그 대우의 참·거짓은 항상 같아요</b>.`,
+        f:`<div class="lbl">핵심</div>p → q 의 대우: ~q → ~p (참·거짓 일치)`,
+        q:`"x = 2이면 x<sup>2</sup> = 4" 의 대우는?`,
+        a:`<b>"x<sup>2</sup> ≠ 4이면 x ≠ 2"</b>`, s:`가정과 결론을 부정하고 자리를 바꾸면 대우예요.` },
+      { t:"함수와 합성함수", v:"함수 합성함수 역함수",
+        c:`정의역의 각 원소에 공역의 원소가 <b>하나씩</b> 대응하면 함수예요. 두 함수를 이어 붙인 것이 <b>합성함수</b>예요.`,
+        f:`<div class="lbl">핵심</div>(g ∘ f)(x) = g(f(x))`,
+        q:`f(x) = x + 1, g(x) = 2x 일 때 (g ∘ f)(1)은?`,
+        a:`<b>4</b>`, s:`f(1) = 2, 그 다음 g(2) = 4` },
+      { t:"유리함수·무리함수", v:"유리함수 점근선 무리함수",
+        c:`유리함수 y = <span class="fr"><span class="nu">k</span><span class="de">x − p</span></span> + q 의 그래프는 <b>점근선</b> x = p, y = q 에 한없이 가까워져요.`,
+        f:`<div class="lbl">핵심</div>y = <span class="fr"><span class="nu">1</span><span class="de">x</span></span> 의 점근선은 x축, y축`,
+        q:`y = <span class="fr"><span class="nu">1</span><span class="de">x − 2</span></span> + 3 의 점근선은?`,
+        a:`<b>x = 2, y = 3</b>`, s:`분모가 0이 되는 x = 2, 그리고 더해진 y = 3` },
+    ]},
+    { unit:"수학Ⅰ", items:[
+      { t:"지수와 지수함수", v:"지수법칙 지수함수 수학1",
+        c:`지수를 0·음수·유리수까지 넓혀요. y = a<sup>x</sup> (a&gt;0, a≠1) 가 지수함수예요.`,
+        f:`<div class="lbl">핵심</div>a<sup>0</sup> = 1, &nbsp; a<sup>−n</sup> = <span class="fr"><span class="nu">1</span><span class="de">a<sup>n</sup></span></span>`,
+        q:`2<sup>−3</sup> = ?`,
+        a:`<b><span class="fr"><span class="nu">1</span><span class="de">8</span></span></b>`, s:`2<sup>−3</sup> = 1 / 2<sup>3</sup> = 1/8` },
+      { t:"로그와 로그함수", v:"로그 개념 로그법칙 수학1",
+        c:`a<sup>x</sup> = N 일 때 x = log<sub>a</sub>N 으로 써요. "a를 몇 제곱해야 N이 되나"를 뜻해요.`,
+        f:`<div class="lbl">핵심</div>log<sub>a</sub>(MN) = log<sub>a</sub>M + log<sub>a</sub>N`,
+        q:`log<sub>2</sub>8 = ?`,
+        a:`<b>3</b>`, s:`2를 3제곱하면 8 (2<sup>3</sup> = 8)이므로 3` },
+      { t:"삼각함수", v:"삼각함수 기본 단위원 sin cos tan",
+        c:`각에 대한 비를 다루는 함수예요. 단위원에서 sin은 y좌표, cos는 x좌표로 생각하면 편해요. 일정 주기로 반복되는 <b>주기함수</b>예요.`,
+        f:`<div class="lbl">핵심</div>sin<sup>2</sup>θ + cos<sup>2</sup>θ = 1`,
+        q:`sin 30° = ?`,
+        a:`<b><span class="fr"><span class="nu">1</span><span class="de">2</span></span></b>`, s:`기본 각의 삼각비예요. sin 30° = 1/2` },
+      { t:"등차수열", v:"등차수열 일반항 합 공식",
+        c:`이웃한 항의 차(공차 d)가 일정한 수열이에요.`,
+        f:`<div class="lbl">핵심</div>a<sub>n</sub> = a<sub>1</sub> + (n − 1)d, &nbsp; S<sub>n</sub> = <span class="fr"><span class="nu">n(a<sub>1</sub> + a<sub>n</sub>)</span><span class="de">2</span></span>`,
+        q:`2, 5, 8, … 의 제10항은?`,
+        a:`<b>29</b>`, s:`a<sub>1</sub> = 2, d = 3 → a<sub>10</sub> = 2 + 9×3 = 29` },
+      { t:"등비수열", v:"등비수열 일반항 합 공식",
+        c:`이웃한 항의 비(공비 r)가 일정한 수열이에요.`,
+        f:`<div class="lbl">핵심</div>a<sub>n</sub> = a<sub>1</sub> · r<sup>n−1</sup>`,
+        q:`3, 6, 12, … 의 제5항은?`,
+        a:`<b>48</b>`, s:`a<sub>1</sub> = 3, r = 2 → a<sub>5</sub> = 3×2<sup>4</sup> = 48` },
+      { t:"수열의 합 (시그마 Σ)", v:"시그마 수열의 합 공식",
+        c:`Σ는 여러 항을 더하라는 기호예요. 자주 쓰는 합 공식을 외워두면 좋아요.`,
+        f:`<div class="lbl">핵심</div>Σ<sub>k=1</sub><sup>n</sup> k = <span class="fr"><span class="nu">n(n + 1)</span><span class="de">2</span></span>`,
+        q:`1 + 2 + 3 + … + 10 = ?`,
+        a:`<b>55</b>`, s:`10×11 / 2 = 55` },
+    ]},
+    { unit:"수학Ⅱ", items:[
+      { t:"함수의 극한", v:"함수의 극한 개념 수학2",
+        c:`x가 a에 한없이 가까워질 때 f(x)가 다가가는 값이 극한이에요. 0/0 꼴은 <b>인수분해 후 약분</b>으로 풀어요.`,
+        f:`<div class="lbl">핵심</div>좌극한 = 우극한 이면 극한이 존재`,
+        q:`lim<sub>x→2</sub> <span class="fr"><span class="nu">x<sup>2</sup> − 4</span><span class="de">x − 2</span></span> = ?`,
+        a:`<b>4</b>`, s:`(x−2)(x+2)/(x−2) = x+2 → x=2 대입하면 4` },
+      { t:"미분계수와 도함수", v:"미분 도함수 공식 수학2",
+        c:`한 점에서의 순간변화율이 <b>미분계수</b>이고, 그래프의 <b>접선의 기울기</b>예요. 이를 함수로 나타낸 것이 도함수 f'(x)예요.`,
+        f:`<div class="lbl">핵심</div>(x<sup>n</sup>)' = n·x<sup>n−1</sup>, &nbsp; (상수)' = 0`,
+        q:`f(x) = x<sup>3</sup> 의 도함수는?`,
+        a:`<b>f'(x) = 3x<sup>2</sup></b>`, s:`지수 3을 앞으로 내리고 지수를 1 줄여요.` },
+      { t:"도함수의 활용", v:"도함수 증가 감소 극대 극소",
+        c:`f'(x) &gt; 0 이면 증가, &lt; 0 이면 감소예요. f'(x) = 0 이 되는 곳에서 <b>극대·극소</b>가 생길 수 있어요.`,
+        f:`<div class="lbl">핵심</div>접선의 기울기 = f'(a)`,
+        q:`f(x) = x<sup>2</sup> − 4x 가 극솟값을 갖는 x는?`,
+        a:`<b>x = 2</b>`, s:`f'(x) = 2x − 4 = 0 → x = 2` },
+      { t:"부정적분", v:"부정적분 개념 적분상수",
+        c:`미분의 <b>역연산</b>이에요. 적분한 뒤에는 <b>적분상수 C</b>를 꼭 붙여야 해요.`,
+        f:`<div class="lbl">핵심</div>∫ x<sup>n</sup> dx = <span class="fr"><span class="nu">x<sup>n+1</sup></span><span class="de">n + 1</span></span> + C &nbsp;(n ≠ −1)`,
+        q:`∫ 2x dx = ?`,
+        a:`<b>x<sup>2</sup> + C</b>`, s:`2x를 적분하면 x<sup>2</sup>, 상수 C를 더해요.` },
+      { t:"정적분과 넓이", v:"정적분 넓이 수학2",
+        c:`정적분은 그래프와 x축 사이의 넓이(부호 포함)예요. 부정적분 F(x)를 구해 위끝·아래끝을 대입해 빼요.`,
+        f:`<div class="lbl">핵심</div>∫<sub>a</sub><sup>b</sup> f(x) dx = F(b) − F(a)`,
+        q:`∫<sub>0</sub><sup>2</sup> 2x dx = ?`,
+        a:`<b>4</b>`, s:`∫2x dx = x<sup>2</sup>, [x<sup>2</sup>]<sub>0</sub><sup>2</sup> = 4 − 0 = 4` },
+    ]},
+    { unit:"확률과 통계", items:[
+      { t:"순열과 조합", v:"순열 조합 nPr nCr 차이",
+        c:`<b>순열</b>은 순서를 따지는 경우의 수(nPr), <b>조합</b>은 순서를 따지지 않는 경우의 수(nCr)예요.`,
+        f:`<div class="lbl">핵심</div><sub>n</sub>C<sub>r</sub> = <span class="fr"><span class="nu"><sub>n</sub>P<sub>r</sub></span><span class="de">r!</span></span>`,
+        q:`서로 다른 4명 중 2명을 뽑는 경우의 수는?`,
+        a:`<b>6</b>`, s:`<sub>4</sub>C<sub>2</sub> = (4×3)/(2×1) = 6` },
+      { t:"이항정리", v:"이항정리 일반항 계수",
+        c:`(a + b)<sup>n</sup> 을 전개할 때 각 항의 계수가 조합 <sub>n</sub>C<sub>r</sub> 로 정해져요.`,
+        f:`<div class="lbl">핵심</div>(a + b)<sup>n</sup> = Σ <sub>n</sub>C<sub>r</sub> a<sup>n−r</sup> b<sup>r</sup>`,
+        q:`(x + 1)<sup>3</sup> 의 전개식에서 x<sup>2</sup>의 계수는?`,
+        a:`<b>3</b>`, s:`x<sup>2</sup>항은 <sub>3</sub>C<sub>1</sub> x<sup>2</sup>·1 = 3x<sup>2</sup>` },
+      { t:"확률", v:"확률 기본 여사건 덧셈정리",
+        c:`어떤 사건이 일어날 가능성을 0과 1 사이 수로 나타낸 거예요.`,
+        f:`<div class="lbl">핵심</div>여사건 P(A<sup>c</sup>) = 1 − P(A)`,
+        q:`주사위 한 개를 던질 때 짝수가 나올 확률은?`,
+        a:`<b><span class="fr"><span class="nu">1</span><span class="de">2</span></span></b>`, s:`짝수는 2,4,6 → 3/6 = 1/2` },
+      { t:"조건부확률", v:"조건부확률 곱셈정리",
+        c:`사건 B가 일어났다는 조건에서 A가 일어날 확률이에요.`,
+        f:`<div class="lbl">핵심</div>P(A | B) = <span class="fr"><span class="nu">P(A ∩ B)</span><span class="de">P(B)</span></span>`,
+        q:`P(B) = <span class="fr"><span class="nu">1</span><span class="de">2</span></span>, P(A ∩ B) = <span class="fr"><span class="nu">1</span><span class="de">6</span></span> 일 때 P(A | B)는?`,
+        a:`<b><span class="fr"><span class="nu">1</span><span class="de">3</span></span></b>`, s:`(1/6) ÷ (1/2) = 1/3` },
+      { t:"확률분포와 기댓값", v:"확률분포 기댓값 이산확률변수",
+        c:`확률변수 X가 가지는 값과 그 확률의 표가 확률분포예요. 평균적으로 기대되는 값이 <b>기댓값 E(X)</b>예요.`,
+        f:`<div class="lbl">핵심</div>E(X) = Σ x<sub>i</sub> p<sub>i</sub>`,
+        q:`X가 1, 2를 각각 확률 <span class="fr"><span class="nu">1</span><span class="de">2</span></span> 로 가질 때 E(X)는?`,
+        a:`<b>1.5</b>`, s:`1×½ + 2×½ = 0.5 + 1 = 1.5` },
+      { t:"정규분포와 표준화", v:"정규분포 표준화 Z 통계적 추정",
+        c:`평균을 중심으로 좌우대칭인 종 모양 분포예요. 값을 평균·표준편차로 바꾼 <b>Z값(표준화)</b>으로 비교해요.`,
+        f:`<div class="lbl">핵심</div>Z = <span class="fr"><span class="nu">X − m</span><span class="de">σ</span></span>`,
+        q:`평균 60, 표준편차 10인 정규분포에서 X = 70의 Z값은?`,
+        a:`<b>1</b>`, s:`(70 − 60) / 10 = 1` },
+    ]},
+  ],
+};
+
+/* ================= 저장소 ================= */
+const KEY = "munmath-v1";
+let mem = null;
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+let understood = {};
+async function load(){ const raw=lsGet(KEY); if(raw){ try{ return JSON.parse(raw); }catch(e){} } return mem || {}; }
+async function save(){ const v=JSON.stringify(understood); mem=JSON.parse(v); lsSet(KEY,v); }
+async function clearAll(){ understood={}; mem=null; lsDel(KEY); }
+
+/* ================= 상태 / 렌더 ================= */
+let level = "중학교";
+let filter = "전체";
+const $ = id => document.getElementById(id);
+const ytURL = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
+const idOf = (lv, ui, ii) => lv + "|" + ui + "|" + ii;
+
+function renderChips(){
+  const units = DATA[level].map(u=>u.unit);
+  const all = ["전체", ...units];
+  $("chips").innerHTML = all.map(u =>
+    `<button class="chip${u===filter?' active':''}" data-u="${u}">${u}</button>`).join("");
+  $("chips").querySelectorAll(".chip").forEach(c=>{
+    c.addEventListener("click", ()=>{ filter = c.dataset.u; renderChips(); renderList(); });
+  });
+}
+
+function renderList(){
+  const groups = DATA[level];
+  let n = 0; // 레벨 내 통합 번호
+  let html = "";
+  groups.forEach((g, ui) => {
+    const visible = (filter === "전체" || filter === g.unit);
+    g.items.forEach((it, ii) => { n++; it._n = n; it._ui = ui; it._ii = ii; });
+    if(!visible) return;
+    html += `<div class="unit-h">${g.unit}</div>`;
+    g.items.forEach((it) => {
+      const id = idOf(level, g.unit, it._ii);
+      const done = !!understood[id];
+      html += `
+        <div class="card${done?' done':''}" data-id="${id}">
+          <button class="chead" data-toggle>
+            <span class="badge">${it._n}</span>
+            <span class="t">${it.t}</span>
+            ${done?'<span class="check">✓</span>':''}
+            <span class="chev">▶</span>
+          </button>
+          <div class="cbody"><div class="cbody-inner"><div class="cbody-pad">
+            <div class="lbl" style="color:var(--pen)">개념</div>
+            <div class="concept">${it.c}</div>
+            <div class="formula">${it.f}</div>
+            <div class="problem"><div class="lbl">문제</div>${it.q}</div>
+            <button class="reveal" data-reveal>정답·풀이 확인 ▾</button>
+            <div class="answer"><div class="lbl">정답</div>${it.a}<div class="sol">풀이 · ${it.s}</div></div>
+            <div class="actions">
+              <a class="vid" href="${ytURL(it.v)}" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="4" fill="currentColor" class="play" opacity=".12"/><path d="M2 9a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V9z" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5l5 2.5-5 2.5v-5z" fill="currentColor" class="play"/></svg>
+                관련 영상 보기
+              </a>
+              <button class="understood${done?' on':''}" data-understood>${done?'이해함 ✓':'이해함'}</button>
+            </div>
+          </div></div></div>
+        </div>`;
+    });
+  });
+  $("list").innerHTML = html;
+  bindCards();
+  renderProgress();
+}
+
+function bindCards(){
+  $("list").querySelectorAll(".card").forEach(card=>{
+    card.querySelector("[data-toggle]").addEventListener("click", ()=> card.classList.toggle("open"));
+    card.querySelector("[data-reveal]").addEventListener("click", e=>{
+      e.stopPropagation();
+      const ans = card.querySelector(".answer");
+      const shown = ans.classList.toggle("show");
+      e.currentTarget.textContent = shown ? "정답·풀이 숨기기 ▴" : "정답·풀이 확인 ▾";
+    });
+    card.querySelector("[data-understood]").addEventListener("click", async e=>{
+      e.stopPropagation();
+      const id = card.dataset.id;
+      if(understood[id]) delete understood[id]; else understood[id] = true;
+      await save();
+      const on = !!understood[id];
+      card.classList.toggle("done", on);
+      e.currentTarget.classList.toggle("on", on);
+      e.currentTarget.textContent = on ? "이해함 ✓" : "이해함";
+      // 헤더 체크 표시 갱신
+      let chk = card.querySelector(".chead .check");
+      if(on && !chk){ chk = document.createElement("span"); chk.className="check"; chk.textContent="✓"; card.querySelector(".chead .t").after(chk); }
+      if(!on && chk){ chk.remove(); }
+      renderProgress();
+    });
+  });
+}
+
+function renderProgress(){
+  let total = 0, done = 0;
+  DATA[level].forEach(g => g.items.forEach((it, ii) => {
+    total++;
+    if(understood[idOf(level, g.unit, ii)]) done++;
+  }));
+  $("progNum").textContent = done;
+  $("progTot").textContent = total;
+  $("progBar").style.width = total ? (done/total*100)+"%" : "0%";
+}
+
+function setLevel(lv){
+  level = lv; filter = "전체";
+  $("segMid").classList.toggle("active", lv==="중학교");
+  $("segHigh").classList.toggle("active", lv==="고등학교");
+  renderChips(); renderList();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+$("segMid").addEventListener("click", ()=>setLevel("중학교"));
+$("segHigh").addEventListener("click", ()=>setLevel("고등학교"));
+
+/* ================= 부팅 ================= */
+function _dl(name,text){ const b=new Blob([text],{type:"application/json"}); const u=URL.createObjectURL(b); const a=document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
+function openBackup(){ document.getElementById("importText").value=""; document.getElementById("backupModal").classList.add("show"); }
+function closeBackup(){ document.getElementById("backupModal").classList.remove("show"); }
+function exportProgress(){ const p=JSON.stringify({app:KEY,v:1,data:understood}); document.getElementById("backupText").value=p; _dl("math-progress.json",p); try{ navigator.clipboard.writeText(p); }catch(e){} }
+async function importProgress(text){ let o; try{ o=JSON.parse(text); }catch(e){ alert("형식이 올바르지 않아요. 내보낸 코드/파일을 그대로 넣어주세요."); return; } const d=(o&&o.data)?o.data:o; if(!d||typeof d!=="object"){ alert("진도 데이터를 찾지 못했어요."); return; } understood=d; await save(); renderChips(); renderList(); closeBackup(); alert("불러왔어요! 이해 완료 "+Object.keys(understood).length+"개"); }
+document.getElementById("backupBtn").addEventListener("click",openBackup);
+document.getElementById("backupClose").addEventListener("click",closeBackup);
+document.getElementById("backupModal").addEventListener("click",e=>{ if(e.target.id==="backupModal") closeBackup(); });
+document.getElementById("exportBtn").addEventListener("click",exportProgress);
+document.getElementById("importBtn").addEventListener("click",()=>{ const t=document.getElementById("importText").value.trim(); if(t) importProgress(t); else alert("불러올 코드를 붙여넣어 주세요."); });
+document.getElementById("importFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>importProgress(String(r.result)); r.readAsText(f); });
+document.getElementById("modalReset").addEventListener("click",async()=>{ if(confirm("이 기기의 이해 완료 기록을 모두 지울까요?")){ await clearAll(); renderChips(); renderList(); closeBackup(); } });
+
+(async function init(){
+  understood = await load();
+  renderChips(); renderList();
+})();
+</script>
+</body>
+</html>
