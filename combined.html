@@ -88,7 +88,11 @@
   .progress-mini{height:6px; background:var(--line2); border-radius:99px; overflow:hidden; margin:10px 2px 0}
   .progress-mini > i{display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .35s ease}
 
-  .stage{flex:1; display:flex; align-items:center; justify-content:center; padding:24px 4px 18px; perspective:1600px}
+  .stage{flex:1; display:flex; align-items:center; justify-content:center; padding:24px 4px 18px; perspective:1600px; position:relative}
+  .prevcard{position:absolute; top:18px; left:2px; z-index:6; width:40px; height:40px; border-radius:50%; background:var(--card); border:1px solid var(--line); box-shadow:0 2px 8px rgba(0,0,0,.10); font-size:19px; font-weight:700; color:var(--muted); display:flex; align-items:center; justify-content:center; transition:opacity .15s, transform .08s}
+  .prevcard:hover{color:var(--accent); border-color:var(--accent-soft)}
+  .prevcard:active{transform:scale(.94)}
+  .prevcard:disabled{opacity:0; pointer-events:none}
   .flash{position:relative; width:100%; max-width:440px; aspect-ratio:3/4; max-height:66vh; transform-style:preserve-3d; transition:transform .5s cubic-bezier(.2,.7,.2,1); cursor:pointer}
   .flash.flipped{transform:rotateY(180deg)}
   .face{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:var(--card); border:1px solid var(--line); border-radius:24px; box-shadow:var(--shadow); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px 26px; text-align:center}
@@ -179,7 +183,7 @@
     <div class="top">
       <div class="brand">
         <span class="ring"></span>
-        <div><h1>수능 영단어</h1><small id="brandSub">WORD &amp; EXAMPLE</small></div>
+        <div><h1>단어 + 예문 통합</h1><small id="brandSub">WORD &amp; EXAMPLE</small></div>
       </div>
       <div class="hbtns">
         <button class="reset" id="backupBtn">⤓ 백업</button>
@@ -213,6 +217,7 @@
     <div class="progress-mini"><i id="miniBar"></i></div>
 
     <div class="stage">
+      <button class="prevcard" id="prevBtn" type="button" aria-label="이전 카드로">←</button>
       <div class="flash" id="flash">
         <div class="face front">
           <span class="tagword">단어 + 예문</span>
@@ -2477,6 +2482,12 @@ function renderCard(){
   const learn=idxs.filter(i=>state.status[DECK[i][0]]==="learning").length;
   $("cntKnown").textContent=known; $("cntLearn").textContent=learn;
   $("miniBar").style.width=(session.pos/idxs.length*100)+"%";
+  const pb=$("prevBtn"); if(pb) pb.disabled=(session.pos<=0);
+}
+function prevCard(){
+  if(!session || session.pos<=0) return;
+  session.pos--;
+  renderCard();
 }
 function flip(){ flipped=!flipped; $("flash").classList.toggle("flipped", flipped); }
 async function mark(status){
@@ -2504,6 +2515,7 @@ $("resumeBtn").addEventListener("click", resume);
 $("reviewLink").addEventListener("click", ()=>{ if(learningIndices().length) startReview(); });
 $("backBtn").addEventListener("click", ()=>{ renderHome(); show("home"); });
 $("flash").addEventListener("click", flip);
+$("prevBtn").addEventListener("click", e=>{ e.stopPropagation(); prevCard(); });
 $("wSpeak").addEventListener("click", e=>{ e.stopPropagation(); speakWord($("wSpeak")); });
 $("sSpeak").addEventListener("click", e=>{ e.stopPropagation(); speakSentence($("sSpeak")); });
 $("wSpeak2").addEventListener("click", e=>{ e.stopPropagation(); speakWord($("wSpeak2")); });
@@ -2520,6 +2532,7 @@ document.addEventListener("keydown", e=>{
   if(e.code==="Space"||e.code==="Enter"){ e.preventDefault(); flip(); }
   else if(e.key==="1") mark("learning");
   else if(e.key==="2") mark("known");
+  else if(e.key==="ArrowLeft"){ e.preventDefault(); prevCard(); }
   else if(e.key==="p"||e.key==="P"){ e.preventDefault(); speakWord(flipped?$("wSpeak2"):$("wSpeak")); }
   else if(e.key==="o"||e.key==="O"){ e.preventDefault(); speakSentence(flipped?$("sSpeak2"):$("sSpeak")); }
 });
