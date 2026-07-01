@@ -59,6 +59,23 @@
   .resume .l span{display:block; font-size:11.5px; opacity:.85; font-weight:500; letter-spacing:.04em}
   .resume .l strong{font-size:17px; font-weight:700; letter-spacing:-.01em}
   .resume .arrow{font-size:22px; line-height:1}
+  .combo{width:100%; background:var(--card); color:var(--accent-dark); border:1.5px solid var(--accent-soft); border-radius:16px; padding:15px 18px; display:flex; align-items:center; justify-content:space-between; margin:-8px 0 24px; transition:transform .12s ease, background .2s}
+  .combo:hover{background:var(--accent-soft)}
+  .combo:active{transform:scale(.985)}
+  .combo .l{text-align:left}
+  .combo .l span{display:block; font-size:11.5px; opacity:.8; font-weight:500; letter-spacing:.04em}
+  .combo .l strong{font-size:16px; font-weight:700; letter-spacing:-.01em}
+  .combo .arrow{font-size:20px; line-height:1; color:var(--accent)}
+  .sheetmask{position:fixed; inset:0; background:rgba(40,30,20,.42); display:flex; align-items:flex-end; justify-content:center; z-index:50}
+  .sheetmask.hidden{display:none}
+  .rangebox{width:100%; max-width:440px; background:var(--bg1,#fff); background:var(--card); border-radius:20px 20px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom)); box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+  .rangebox h3{font-size:17px; font-weight:700; margin-bottom:4px}
+  .rangebox p{font-size:12.5px; color:var(--muted); margin-bottom:16px}
+  .rangebtns{display:flex; flex-direction:column; gap:10px}
+  .rangebtns button{width:100%; text-align:left; background:var(--paper); border:1.5px solid var(--line); border-radius:13px; padding:15px 16px; font-size:15px; font-weight:600; color:var(--ink); transition:.13s}
+  .rangebtns button:hover{border-color:var(--accent-soft)}
+  .rangebtns button b{color:var(--accent-dark)}
+  .rangebtns .cancel{text-align:center; background:none; border:none; color:var(--muted); font-size:13.5px; padding:8px; margin-top:4px}
 
   .section-label{font-size:12px; font-weight:700; color:var(--muted); letter-spacing:.12em; text-transform:uppercase; margin:0 4px 12px}
   .review-link{float:right; color:var(--accent); text-transform:none; letter-spacing:0; font-size:12.5px; cursor:pointer}
@@ -233,6 +250,11 @@
       <span class="arrow">→</span>
     </button>
 
+    <button class="combo" id="comboQuizBtn">
+      <span class="l"><span>여러 묶음을 섞어서</span><strong>📚 종합 시험 보기</strong></span>
+      <span class="arrow">→</span>
+    </button>
+
     <div class="section-label">단어 묶음 (하루 20개)<span class="review-link" id="reviewLink">↺ 안 외운 것만 복습</span></div>
     <div class="grid" id="dayGrid"></div>
 
@@ -331,6 +353,14 @@
       <button class="da-ghost" id="qdReview">✕ 틀린 단어만 다시 보기</button>
       <button class="da-ghost" id="qdRetry">↻ 다시 풀기</button>
       <button class="da-text" id="qdHome">목록으로 돌아가기</button>
+    </div>
+  </div>
+
+  <div id="rangeMask" class="sheetmask hidden">
+    <div class="rangebox">
+      <h3>📚 종합 시험</h3>
+      <p>여러 묶음의 단어를 섞어서 시험 봐요. 헷갈리는 비슷한 단어로 문제가 나와요.</p>
+      <div class="rangebtns" id="rangeBtns"></div>
     </div>
   </div>
 
@@ -2607,19 +2637,16 @@ function blankSentence(w){
   let s=plain(w[4]); if(!re.test(s)) return null;
   return s.replace(re,"<u>____</u>");
 }
-function buildQuiz(day){
-  const idxs=dayWords(day);
-  const questions=idxs.map((ti,qi)=>{
+function makeQuestions(targetIdxs){
+  return targetIdxs.map((ti,qi)=>{
     const w=DECK[ti];
     const sim=confusables(ti, 6);
-    const type = (qi%2===0) ? "spell" : "mean";  // spell(철자 분별) 먼저
+    const type = (qi%2===0) ? "spell" : "mean";
     if(type==="spell"){
-      // 뜻(+빈칸 예문) 보여주고, 비슷한 철자 단어 중 올바른 것 고르기
-      const distr=qShuffle(sim).slice(0,2).map(i=>i);
+      const distr=qShuffle(sim).slice(0,2);
       const opts=qShuffle([ti, ...distr]);
       return { type, target:ti, opts, optKind:"en", stem:{ m:w[2], s:blankSentence(w) } };
     } else {
-      // 단어 보여주고, 비슷한 단어들의 뜻 중 올바른 뜻 고르기
       const seen=new Set([w[2]]); const distr=[];
       for(const i of qShuffle(sim)){ const mm=DECK[i][2]; if(!seen.has(mm)){ seen.add(mm); distr.push(i); } if(distr.length>=2) break; }
       while(distr.length<2){ const r=Math.random()*DECK.length|0; if(r!==ti && !seen.has(DECK[r][2])){ seen.add(DECK[r][2]); distr.push(r); } }
@@ -2627,10 +2654,47 @@ function buildQuiz(day){
       return { type, target:ti, opts, optKind:"ko", stem:{ w:w[0] } };
     }
   });
-  quiz={ day, questions, pos:0, correct:0, wrong:[] };
-  show("quiz");
-  $("quizWhere").textContent=`Day ${day+1} 시험`;
-  renderQ();
+}
+function buildQuiz(day){
+  const pool=dayWords(day);
+  quiz={ day, pool, label:`Day ${day+1} 시험`, questions:makeQuestions(pool), pos:0, correct:0, wrong:[] };
+  show("quiz"); $("quizWhere").textContent=quiz.label; renderQ();
+}
+function buildComboQuiz(pool, label){
+  const qs=makeQuestions(qShuffle(pool));
+  quiz={ day:null, pool, label, questions:qs, pos:0, correct:0, wrong:[] };
+  show("quiz"); $("quizWhere").textContent=label; renderQ();
+}
+function sampleIdx(pool, n){ return qShuffle(pool).slice(0, Math.min(n, pool.length)); }
+function openRange(){
+  const box=$("rangeBtns"); box.innerHTML="";
+  const maxDay=state.lastDay||0;
+  const opts=[];
+  if(maxDay>=1){
+    const lo=Math.max(0, maxDay-4);
+    let pool=[]; for(let d=lo; d<=maxDay; d++) pool=pool.concat(dayWords(d));
+    opts.push({ label:`최근 묶음 (Day ${lo+1}~${maxDay+1})`, sub:`${pool.length}개 중 25문제`, run:()=>buildComboQuiz(sampleIdx(pool,25), `종합 · Day ${lo+1}~${maxDay+1}`) });
+  }
+  if(maxDay>=1){
+    let pool=[]; for(let d=0; d<=maxDay; d++) pool=pool.concat(dayWords(d));
+    opts.push({ label:`지금까지 전체 (Day 1~${maxDay+1})`, sub:`${pool.length}개 중 30문제`, run:()=>buildComboQuiz(sampleIdx(pool,30), `종합 · Day 1~${maxDay+1}`) });
+  }
+  const learn=learningIndices();
+  if(learn.length>=4){
+    opts.push({ label:`안 외웠던 단어만`, sub:`${learn.length}개 모아서`, run:()=>buildComboQuiz(sampleIdx(learn,30), `종합 · 복습`) });
+  }
+  opts.push({ label:`전체 단어에서 랜덤`, sub:`${TOTAL}개 중 30문제`, run:()=>buildComboQuiz(sampleIdx(DECK.map((_,i)=>i),30), `종합 · 전체`) });
+
+  opts.forEach(o=>{
+    const b=document.createElement("button");
+    b.innerHTML=`<b>${o.label}</b><br><span style="font-size:12px;color:var(--muted);font-weight:500">${o.sub}</span>`;
+    b.addEventListener("click", ()=>{ $("rangeMask").classList.add("hidden"); o.run(); });
+    box.appendChild(b);
+  });
+  const c=document.createElement("button"); c.className="cancel"; c.textContent="닫기";
+  c.addEventListener("click", ()=>$("rangeMask").classList.add("hidden"));
+  box.appendChild(c);
+  $("rangeMask").classList.remove("hidden");
 }
 function renderQ(){
   const q=quiz.questions[quiz.pos], w=DECK[q.target];
@@ -2670,14 +2734,16 @@ function answerQ(chosen, btn){
 }
 async function finishQuiz(){
   const total=quiz.questions.length, sc=quiz.correct;
-  const prev=(state.scores&&state.scores[quiz.day])||0;
-  if(!state.scores) state.scores={};
-  if(sc>prev) state.scores[quiz.day]=sc;
-  await saveState();
+  if(quiz.day!=null){
+    if(!state.scores) state.scores={};
+    const prev=state.scores[quiz.day]||0;
+    if(sc>prev) state.scores[quiz.day]=sc;
+    await saveState();
+  } else { await saveState(); }
   show("quizdone");
   const pct=Math.round(sc/total*100);
   $("qdSeal").textContent = pct>=90?"🏆":pct>=70?"🎯":"📚";
-  $("qdTitle").textContent=`Day ${quiz.day+1} 시험 결과`;
+  $("qdTitle").textContent=`${quiz.label} 결과`;
   $("qdScore").textContent=sc; $("qdTotal").textContent=total; $("qdPct").textContent=`(${pct}%)`;
   const wrongN=quiz.wrong.length;
   if(wrongN>0){ $("qdWrongLine").classList.remove("hidden"); $("qdWrong").textContent=wrongN; }
@@ -2703,9 +2769,11 @@ $("doneReview").addEventListener("click", ()=>{ if(learningIndices().length) sta
 $("doneHome").addEventListener("click", ()=>{ renderHome(); show("home"); });
 $("doneQuiz").addEventListener("click", ()=>{ if($("doneQuiz")._day!=null) buildQuiz($("doneQuiz")._day); });
 $("quizBack").addEventListener("click", ()=>{ renderHome(); show("home"); });
-$("qdRetry").addEventListener("click", ()=>{ if(quiz) buildQuiz(quiz.day); });
+$("qdRetry").addEventListener("click", ()=>{ if(!quiz) return; if(quiz.day!=null) buildQuiz(quiz.day); else buildComboQuiz(quiz.pool, quiz.label); });
 $("qdReview").addEventListener("click", ()=>{ if(quiz && quiz.wrong.length) startList(quiz.wrong); });
 $("qdHome").addEventListener("click", ()=>{ renderHome(); show("home"); });
+$("comboQuizBtn").addEventListener("click", openRange);
+$("rangeMask").addEventListener("click", (e)=>{ if(e.target.id==="rangeMask") $("rangeMask").classList.add("hidden"); });
 $("resetBtn").addEventListener("click", async ()=>{ if(confirm("외운 표시와 진도 기록을 모두 지울까요? 되돌릴 수 없어요.")){ await clearState(); renderHome(); show("home"); } });
 
 document.addEventListener("keydown", e=>{
